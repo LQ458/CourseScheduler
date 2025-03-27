@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
+import io
 from scheduler import ScheduleGenerator
 from data_manager import DataManager
 from visualizations import ScheduleVisualizer
@@ -460,15 +461,192 @@ elif section == "View Schedule":
         # Export options
         st.subheader("Export Options")
         
-        if st.button("Export Schedule to CSV"):
-            full_schedule_df = visualizer.get_full_schedule_data()
-            csv = full_schedule_df.to_csv(index=False)
-            st.download_button(
-                label="Download CSV",
-                data=csv,
-                file_name="class_schedule.csv",
-                mime="text/csv"
-            )
+        export_col1, export_col2 = st.columns(2)
+        
+        with export_col1:
+            if st.button("Export Schedule to CSV"):
+                full_schedule_df = visualizer.get_full_schedule_data()
+                csv = full_schedule_df.to_csv(index=False)
+                st.download_button(
+                    label="Download CSV",
+                    data=csv,
+                    file_name="class_schedule.csv",
+                    mime="text/csv"
+                )
+                
+        with export_col2:
+            if st.button("Export Schedule to Excel"):
+                if view_mode == "Class":
+                    detailed_schedule = visualizer.get_class_schedule_data(selected_filter)
+                    title = f"Schedule for {selected_filter}"
+                elif view_mode == "Teacher":
+                    detailed_schedule = visualizer.get_teacher_schedule_data(selected_filter)
+                    title = f"Schedule for Teacher: {selected_filter}"
+                else:  # Room view
+                    detailed_schedule = visualizer.get_room_schedule_data(selected_filter)
+                    title = f"Schedule for Room: {selected_filter}"
+                
+                full_schedule_df = visualizer.get_full_schedule_data()
+                
+                # Create a buffer to store Excel file
+                buffer = io.BytesIO()
+                
+                # Create Excel writer
+                with pd.ExcelWriter(buffer, engine='xlsxwriter') as writer:
+                    # Write current view to first sheet
+                    if not detailed_schedule.empty:
+                        # Reset the index to make it cleaner
+                        if 'time' in detailed_schedule.columns:
+                            detailed_schedule.set_index('time', inplace=True)
+                        
+                        # First worksheet - current view
+                        detailed_schedule.to_excel(writer, sheet_name=f'{view_mode} Schedule')
+                        worksheet = writer.sheets[f'{view_mode} Schedule']
+                        
+                        # Get access to the workbook
+                        workbook = writer.book
+                        
+                        # Create title format
+                        title_format = workbook.add_format({
+                            'bold': True,
+                            'font_size': 14,
+                            'align': 'center',
+                            'valign': 'vcenter'
+                        })
+                        
+                        # Create header format
+                        header_format = workbook.add_format({
+                            'bold': True,
+                            'bg_color': '#4B5563',  # Dark gray like in the screenshot
+                            'font_color': 'white',
+                            'border': 1,
+                            'align': 'center',
+                            'valign': 'vcenter'
+                        })
+                        
+                        # Create time cell format
+                        time_format = workbook.add_format({
+                            'bold': True,
+                            'bg_color': '#374151',  # Darker gray for time cells
+                            'font_color': 'white',
+                            'border': 1,
+                            'align': 'center',
+                            'valign': 'vcenter'
+                        })
+                        
+                        # Create course cell formats for different subjects (using Plotly colors)
+                        colors = {
+                            'Physics': '#19D3F3',      # Light blue
+                            'Chemistry': '#636EFA',    # Blue
+                            'Algebra': '#FF6692',      # Pink
+                            'English': '#EF553B',      # Red-orange
+                            'PE': '#FFA15A',           # Light orange
+                            'Biology': '#AB63FA',      # Purple
+                            'Chinese': '#00CC96',      # Teal
+                            'World History': '#B6E880', # Light green
+                            'Electives': '#FECB52'     # Yellow
+                        }
+                        
+                        course_formats = {}
+                        for course, color in colors.items():
+                            course_formats[course] = workbook.add_format({
+                                'bg_color': color,
+                                'font_color': 'white' if course in ['Physics', 'Chemistry', 'Algebra', 'English', 'Biology', 'World History'] else 'black',
+                                'border': 1,
+                                'align': 'center',
+                                'valign': 'vcenter'
+                            })
+                        
+                        # Default course format for any courses not in our predefined list
+                        default_course_format = workbook.add_format({
+                            'bg_color': '#D3D3D3',  # Light gray
+                            'border': 1,
+                            'align': 'center',
+                            'valign': 'vcenter'
+                        })
+                        
+                        # Add title above the schedule (with merged cells)
+                        col_count = len(detailed_schedule.columns) + 1  # +1 for the index column
+                        worksheet.merge_range(0, 0, 0, col_count - 1, title, title_format)
+                        
+                        # Offset the data by one row to make room for the title
+                        worksheet.write_row(1, 0, [""] + list(detailed_schedule.columns), header_format)
+                        
+                        # Apply formatting to all cells including the time column
+                        for row_idx, time_slot in enumerate(detailed_schedule.index):
+                            # Write time slot with special formatting
+                            worksheet.write(row_idx + 2, 0, time_slot, time_format)
+                            
+                            # Format the data cells based on course name
+                            for col_idx, day in enumerate(detailed_schedule.columns):
+                                cell_value = detailed_schedule.at[time_slot, day]
+                                if pd.notna(cell_value):
+                                    # Find the appropriate format based on the course name
+                                    cell_format = course_formats.get(cell_value, default_course_format)
+                                    worksheet.write(row_idx + 2, col_idx + 1, cell_value, cell_format)
+                                else:
+                                    # Empty cell
+                                    worksheet.write(row_idx + 2, col_idx + 1, "", default_course_format)
+                        
+                        # Auto-adjust column widths
+                        for i in range(col_count):
+                            col_width = 15  # Standardized width for all columns
+                            worksheet.set_column(i, i, col_width)
+                    
+                    # Write full schedule to second sheet
+                    full_schedule_df.to_excel(writer, sheet_name='Full Schedule', index=False)
+                    worksheet_full = writer.sheets['Full Schedule']
+                    
+                    # Format the full schedule sheet
+                    full_header_format = workbook.add_format({
+                        'bold': True,
+                        'bg_color': '#4B5563',
+                        'font_color': 'white',
+                        'border': 1,
+                        'align': 'center',
+                        'valign': 'vcenter'
+                    })
+                    
+                    # Write the header with the formatted style
+                    for col_num, value in enumerate(full_schedule_df.columns.values):
+                        worksheet_full.write(0, col_num, value, full_header_format)
+                    
+                    # Format the data rows with alternating colors
+                    row_format1 = workbook.add_format({
+                        'border': 1,
+                        'bg_color': '#F3F4F6',  # Light gray for even rows
+                        'align': 'center',
+                        'valign': 'vcenter'
+                    })
+                    
+                    row_format2 = workbook.add_format({
+                        'border': 1,
+                        'bg_color': '#FFFFFF',  # White for odd rows
+                        'align': 'center',
+                        'valign': 'vcenter'
+                    })
+                    
+                    # Apply alternating row colors
+                    for row_num in range(1, len(full_schedule_df) + 1):
+                        format_to_use = row_format1 if row_num % 2 == 0 else row_format2
+                        for col_num in range(len(full_schedule_df.columns)):
+                            worksheet_full.write(row_num, col_num, full_schedule_df.iloc[row_num-1, col_num], format_to_use)
+                    
+                    # Auto-adjust columns' width
+                    for i, col in enumerate(full_schedule_df.columns):
+                        max_len = max(full_schedule_df[col].astype(str).map(len).max(), len(col)) + 2
+                        worksheet_full.set_column(i, i, max_len)
+                
+                # Reset buffer position
+                buffer.seek(0)
+                
+                # Provide download link for Excel file
+                st.download_button(
+                    label="Download Excel",
+                    data=buffer,
+                    file_name=f"{view_mode.lower()}_{selected_filter}_schedule.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                )
 
 # Manage Conflicts Section
 elif section == "Manage Conflicts":

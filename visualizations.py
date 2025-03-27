@@ -207,10 +207,19 @@ class ScheduleVisualizer:
         if self.df.empty:
             fig = go.Figure()
             fig.update_layout(
-                title=f"No schedule data available for {class_name}",
+                title={
+                    'text': f"No schedule data available for {class_name}",
+                    'y': 0.95,
+                    'x': 0.5,
+                    'xanchor': 'center',
+                    'yanchor': 'top',
+                    'font': {'size': 24}
+                },
                 xaxis_title="Day",
                 yaxis_title="Time",
-                height=600
+                height=650,
+                margin=dict(t=80, b=50, l=50, r=50),
+                plot_bgcolor='rgba(240, 240, 240, 0.5)'
             )
             return fig
         
@@ -220,10 +229,19 @@ class ScheduleVisualizer:
         if class_df.empty:
             fig = go.Figure()
             fig.update_layout(
-                title=f"No schedule data available for {class_name}",
+                title={
+                    'text': f"No schedule data available for {class_name}",
+                    'y': 0.95,
+                    'x': 0.5,
+                    'xanchor': 'center',
+                    'yanchor': 'top',
+                    'font': {'size': 24}
+                },
                 xaxis_title="Day",
                 yaxis_title="Time",
-                height=600
+                height=650,
+                margin=dict(t=80, b=50, l=50, r=50),
+                plot_bgcolor='rgba(240, 240, 240, 0.5)'
             )
             return fig
         
@@ -275,29 +293,49 @@ class ScheduleVisualizer:
         
         # Update layout
         fig.update_layout(
-            title=f"Schedule for {class_name}",
+            title={
+                'text': f"Schedule for {class_name}",
+                'y': 0.95,
+                'x': 0.5,
+                'xanchor': 'center',
+                'yanchor': 'top',
+                'font': {'size': 24}
+            },
             xaxis=dict(
-                title="Day",
+                title={
+                    'text': "Day",
+                    'font': {'size': 16}
+                },
                 tickvals=list(day_order.values()),
                 ticktext=list(day_order.keys()),
                 range=[-0.2, 5]
             ),
             yaxis=dict(
-                title="Time",
-                range=[7, 17],  # 7 AM to 5 PM
+                title={
+                    'text': "Time",
+                    'font': {'size': 16}
+                },
+                autorange="reversed",  # This ensures 8 AM is at the top
                 dtick=1,
                 tickvals=list(range(8, 17)),
-                ticktext=[f"{hour}:00" for hour in range(8, 17)]
+                ticktext=[f"{hour}:00" for hour in range(8, 17)],
+                
             ),
-            height=600,
+            height=650,  # Increased height to provide more space
+            margin=dict(t=120, b=50, l=50, r=50),  # Increased top margin for title and legend
             legend=dict(
                 title="Courses",
                 orientation="h",
                 yanchor="bottom",
-                y=1.02,
+                y=1.12,  # Moved up to avoid congestion
                 xanchor="center",
-                x=0.5
-            )
+                x=0.5,
+                font={'size': 12},
+                bgcolor='rgba(255, 255, 255, 0.5)',  # Semi-transparent background
+                bordercolor='rgba(0, 0, 0, 0.1)',
+                borderwidth=1
+            ),
+            plot_bgcolor='rgba(240, 240, 240, 0.5)'  # Light gray background
         )
         
         return fig
@@ -315,10 +353,19 @@ class ScheduleVisualizer:
         if self.df.empty:
             fig = go.Figure()
             fig.update_layout(
-                title=f"No schedule data available for {teacher_name}",
+                title={
+                    'text': f"No schedule data available for {teacher_name}",
+                    'y': 0.95,
+                    'x': 0.5,
+                    'xanchor': 'center',
+                    'yanchor': 'top',
+                    'font': {'size': 24}
+                },
                 xaxis_title="Day",
                 yaxis_title="Time",
-                height=600
+                height=650,
+                margin=dict(t=80, b=50, l=50, r=50),
+                plot_bgcolor='rgba(240, 240, 240, 0.5)'
             )
             return fig
         
@@ -328,10 +375,19 @@ class ScheduleVisualizer:
         if teacher_df.empty:
             fig = go.Figure()
             fig.update_layout(
-                title=f"No schedule data available for {teacher_name}",
+                title={
+                    'text': f"No schedule data available for {teacher_name}",
+                    'y': 0.95,
+                    'x': 0.5,
+                    'xanchor': 'center',
+                    'yanchor': 'top',
+                    'font': {'size': 24}
+                },
                 xaxis_title="Day",
                 yaxis_title="Time",
-                height=600
+                height=650,
+                margin=dict(t=80, b=50, l=50, r=50),
+                plot_bgcolor='rgba(240, 240, 240, 0.5)'
             )
             return fig
         
@@ -383,29 +439,49 @@ class ScheduleVisualizer:
         
         # Update layout
         fig.update_layout(
-            title=f"Schedule for Teacher: {teacher_name}",
+            title={
+                'text': f"Schedule for Teacher: {teacher_name}",
+                'y': 0.95,
+                'x': 0.5,
+                'xanchor': 'center',
+                'yanchor': 'top',
+                'font': {'size': 24}
+            },
             xaxis=dict(
-                title="Day",
+                title={
+                    'text': "Day",
+                    'font': {'size': 16}
+                },
                 tickvals=list(day_order.values()),
                 ticktext=list(day_order.keys()),
                 range=[-0.2, 5]
             ),
             yaxis=dict(
-                title="Time",
-                range=[7, 17],  # 7 AM to 5 PM
+                title={
+                    'text': "Time",
+                    'font': {'size': 16}
+                },
+                autorange="reversed",  # This ensures 8 AM is at the top
                 dtick=1,
                 tickvals=list(range(8, 17)),
-                ticktext=[f"{hour}:00" for hour in range(8, 17)]
+                ticktext=[f"{hour}:00" for hour in range(8, 17)],
+                
             ),
-            height=600,
+            height=650,  # Increased height to provide more space
+            margin=dict(t=120, b=50, l=50, r=50),  # Increased top margin for title and legend
             legend=dict(
                 title="Courses",
                 orientation="h",
                 yanchor="bottom",
-                y=1.02,
+                y=1.12,  # Moved up to avoid congestion
                 xanchor="center",
-                x=0.5
-            )
+                x=0.5,
+                font={'size': 12},
+                bgcolor='rgba(255, 255, 255, 0.5)',  # Semi-transparent background
+                bordercolor='rgba(0, 0, 0, 0.1)',
+                borderwidth=1
+            ),
+            plot_bgcolor='rgba(240, 240, 240, 0.5)'  # Light gray background
         )
         
         return fig
@@ -423,10 +499,19 @@ class ScheduleVisualizer:
         if self.df.empty:
             fig = go.Figure()
             fig.update_layout(
-                title=f"No schedule data available for {room_name}",
+                title={
+                    'text': f"No schedule data available for {room_name}",
+                    'y': 0.95,
+                    'x': 0.5,
+                    'xanchor': 'center',
+                    'yanchor': 'top',
+                    'font': {'size': 24}
+                },
                 xaxis_title="Day",
                 yaxis_title="Time",
-                height=600
+                height=650,
+                margin=dict(t=80, b=50, l=50, r=50),
+                plot_bgcolor='rgba(240, 240, 240, 0.5)'
             )
             return fig
         
@@ -436,10 +521,19 @@ class ScheduleVisualizer:
         if room_df.empty:
             fig = go.Figure()
             fig.update_layout(
-                title=f"No schedule data available for {room_name}",
+                title={
+                    'text': f"No schedule data available for {room_name}",
+                    'y': 0.95,
+                    'x': 0.5,
+                    'xanchor': 'center',
+                    'yanchor': 'top',
+                    'font': {'size': 24}
+                },
                 xaxis_title="Day",
                 yaxis_title="Time",
-                height=600
+                height=650,
+                margin=dict(t=80, b=50, l=50, r=50),
+                plot_bgcolor='rgba(240, 240, 240, 0.5)'
             )
             return fig
         
@@ -491,29 +585,49 @@ class ScheduleVisualizer:
         
         # Update layout
         fig.update_layout(
-            title=f"Schedule for Room: {room_name}",
+            title={
+                'text': f"Schedule for Room: {room_name}",
+                'y': 0.95,
+                'x': 0.5,
+                'xanchor': 'center',
+                'yanchor': 'top',
+                'font': {'size': 24}
+            },
             xaxis=dict(
-                title="Day",
+                title={
+                    'text': "Day",
+                    'font': {'size': 16}
+                },
                 tickvals=list(day_order.values()),
                 ticktext=list(day_order.keys()),
                 range=[-0.2, 5]
             ),
             yaxis=dict(
-                title="Time",
-                range=[7, 17],  # 7 AM to 5 PM
+                title={
+                    'text': "Time",
+                    'font': {'size': 16}
+                },
+                autorange="reversed",  # This ensures 8 AM is at the top
                 dtick=1,
                 tickvals=list(range(8, 17)),
-                ticktext=[f"{hour}:00" for hour in range(8, 17)]
+                ticktext=[f"{hour}:00" for hour in range(8, 17)],
+                
             ),
-            height=600,
+            height=650,  # Increased height to provide more space
+            margin=dict(t=120, b=50, l=50, r=50),  # Increased top margin for title and legend
             legend=dict(
                 title="Courses",
                 orientation="h",
                 yanchor="bottom",
-                y=1.02,
+                y=1.12,  # Moved up to avoid congestion
                 xanchor="center",
-                x=0.5
-            )
+                x=0.5,
+                font={'size': 12},
+                bgcolor='rgba(255, 255, 255, 0.5)',  # Semi-transparent background
+                bordercolor='rgba(0, 0, 0, 0.1)',
+                borderwidth=1
+            ),
+            plot_bgcolor='rgba(240, 240, 240, 0.5)'  # Light gray background
         )
         
         return fig
